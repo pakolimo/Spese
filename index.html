@@ -1,0 +1,1243 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <!-- viewport-fit=cover fondamentale per iPhone 16 (Dynamic Island e bordi) -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    
+    <!-- Meta tag per esperienza Web App nativa su iPhone -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="ScontrinoSmart">
+    <meta name="theme-color" content="#09090b">
+    
+    <!-- Icona Home Screen (aggiornabile dall'utente con propria foto o logo IA) -->
+    <link id="appleTouchIcon" rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0%25' stop-color='%2310b981'/%3E%3Cstop offset='100%25' stop-color='%23047857'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='180' height='180' rx='40' fill='url(%23g)'/%3E%3Cpath d='M56 44h68v92l-11-7-11 7-12-7-12 7-11-7-11 7V44z' fill='%23ffffff'/%3E%3Crect x='70' y='66' width='40' height='7' rx='3.5' fill='%23059669'/%3E%3Crect x='70' y='84' width='40' height='7' rx='3.5' fill='%23059669'/%3E%3Crect x='70' y='102' width='24' height='7' rx='3.5' fill='%2310b981'/%3E%3C/svg%3E">
+
+    <title>ScontrinoSmart IA - Gestione Spese</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Google Fonts: Plus Jakarta Sans & Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Gestione rigorosa bordi e Dynamic Island iPhone 16 */
+        html, body {
+            max-width: 100%;
+            overflow-x: hidden;
+            -webkit-tap-highlight-color: transparent;
+            background-color: #f4f5f7;
+        }
+        body {
+            padding-bottom: calc(96px + env(safe-area-inset-bottom));
+        }
+        .ios-header {
+            padding-top: calc(12px + env(safe-area-inset-top));
+            padding-left: max(16px, env(safe-area-inset-left));
+            padding-right: max(16px, env(safe-area-inset-right));
+        }
+        .ios-main {
+            padding-left: max(16px, env(safe-area-inset-left));
+            padding-right: max(16px, env(safe-area-inset-right));
+        }
+        .bottom-nav {
+            padding-bottom: max(10px, env(safe-area-inset-bottom));
+            padding-left: max(12px, env(safe-area-inset-left));
+            padding-right: max(12px, env(safe-area-inset-right));
+        }
+        /* Nasconde scrollbar orizzontali mantenendo lo scorrimento fluido */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="text-zinc-900 antialiased selection:bg-emerald-500/20">
+
+    <!-- ==================== HEADER COMPATTO STILE iOS ==================== -->
+    <header class="ios-header sticky top-0 z-30 bg-zinc-950 text-white pb-3.5 shadow-md">
+        <div class="max-w-md mx-auto flex items-center justify-between gap-2">
+            <!-- Brand & Logo -->
+            <div class="flex items-center gap-2.5 min-w-0">
+                <img id="headerLogoImg" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0%25' stop-color='%2310b981'/%3E%3Cstop offset='100%25' stop-color='%23047857'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='180' height='180' rx='40' fill='url(%23g)'/%3E%3Cpath d='M56 44h68v92l-11-7-11 7-12-7-12 7-11-7-11 7V44z' fill='%23ffffff'/%3E%3Crect x='70' y='66' width='40' height='7' rx='3.5' fill='%23059669'/%3E%3Crect x='70' y='84' width='40' height='7' rx='3.5' fill='%23059669'/%3E%3Crect x='70' y='102' width='24' height='7' rx='3.5' fill='%2310b981'/%3E%3C/svg%3E" alt="Logo" class="w-9 h-9 rounded-xl object-cover shadow-sm shrink-0 border border-white/15">
+                <div class="min-w-0">
+                    <h1 class="font-bold text-sm tracking-tight text-white truncate">ScontrinoSmart</h1>
+                    <p class="text-[10px] font-medium text-emerald-400 truncate">AI Finance Tracker</p>
+                </div>
+            </div>
+
+            <!-- Controlli Destra -->
+            <div class="flex items-center gap-1.5 shrink-0">
+                <select id="monthFilter" onchange="handleMonthChange()" class="bg-zinc-900 text-zinc-100 text-xs font-semibold rounded-xl px-2.5 py-2 border border-zinc-800 focus:outline-none focus:ring-2 focus:ring-emerald-500 max-w-[115px]">
+                    <!-- Popolato via JS -->
+                </select>
+
+                <!-- Pulsante Logo & iPhone -->
+                <button onclick="toggleIosModal(true)" aria-label="Logo e iPhone" class="p-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-zinc-200 border border-zinc-800 transition active:scale-95 flex items-center gap-1">
+                    <i data-lucide="image-plus" class="w-4 h-4 text-emerald-400"></i>
+                </button>
+
+                <!-- Pulsante Chiave API -->
+                <button onclick="openApiKeyModal()" aria-label="Imposta Chiave IA" class="p-2 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/30 transition active:scale-95 relative flex items-center gap-1">
+                    <i data-lucide="key-round" class="w-4 h-4"></i>
+                    <span id="apiKeyDot" class="hidden absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-rose-500 ring-2 ring-zinc-950"></span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- ==================== BANNER AVVISO CHIAVE API MANCANTE ==================== -->
+    <div id="missingApiBanner" class="hidden ios-main max-w-md mx-auto pt-3">
+        <div class="bg-amber-50 border border-amber-300 rounded-2xl p-3 flex items-center justify-between gap-2.5 shadow-xs">
+            <div class="flex items-center gap-2 min-w-0">
+                <span class="text-lg shrink-0">🔑</span>
+                <div class="min-w-0">
+                    <p class="text-xs font-bold text-amber-950 truncate">Attiva l'IA su Safari</p>
+                    <p class="text-[11px] text-amber-800 truncate">Incolla il codice API gratuito</p>
+                </div>
+            </div>
+            <button onclick="openApiKeyModal()" class="bg-zinc-950 text-white font-bold text-xs px-3 py-2 rounded-xl shrink-0 active:scale-95 transition">
+                Incolla
+            </button>
+        </div>
+    </div>
+
+    <!-- ==================== NOTIFICA TOAST ==================== -->
+    <div id="toastContainer" class="fixed top-20 left-4 right-4 z-50 mx-auto max-w-sm pointer-events-none transition-all duration-300 opacity-0 -translate-y-4">
+        <div id="toastBox" class="bg-zinc-900 text-white px-4 py-3 rounded-2xl shadow-2xl border border-zinc-800 flex items-center gap-3 text-xs font-semibold">
+            <i id="toastIcon" data-lucide="check-circle-2" class="w-4 h-4 text-emerald-400 shrink-0"></i>
+            <span id="toastMessage" class="truncate">Operazione completata</span>
+        </div>
+    </div>
+
+    <!-- ==================== CONTENUTO PRINCIPALE ==================== -->
+    <main class="ios-main max-w-md mx-auto pt-4 space-y-4">
+
+        <!-- ==================== TAB 1: DASHBOARD & REPORT IA ==================== -->
+        <section id="tab-dashboard" class="space-y-4">
+            
+            <!-- Hero Card Saldo & Budget (Design Moderno Dark/Emerald) -->
+            <div class="bg-zinc-950 text-white rounded-3xl p-5 shadow-lg relative overflow-hidden">
+                <div class="absolute -right-10 -top-10 w-36 h-36 rounded-full bg-emerald-500/15 blur-2xl pointer-events-none"></div>
+                
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-[11px] font-semibold uppercase tracking-wider text-zinc-400">Uscite del Periodo</span>
+                    <button onclick="openBudgetModal()" class="text-[11px] font-semibold text-emerald-300 bg-white/10 hover:bg-white/15 px-2.5 py-1 rounded-full flex items-center gap-1 active:scale-95 transition">
+                        <i data-lucide="sliders-horizontal" class="w-3 h-3"></i>
+                        <span>Budget <span id="budgetDisplay">1.000,00 €</span></span>
+                    </button>
+                </div>
+
+                <div class="flex items-baseline justify-between gap-2 my-1">
+                    <h2 id="totalSpentDisplay" class="text-3xl font-extrabold text-white tracking-tight">0,00 €</h2>
+                    <span id="budgetPercentageText" class="text-xs font-bold text-emerald-400 bg-emerald-500/15 px-2 py-0.5 rounded-lg">0%</span>
+                </div>
+
+                <!-- Barra Avanzamento Budget -->
+                <div class="w-full h-2.5 bg-zinc-800 rounded-full overflow-hidden mt-3.5">
+                    <div id="budgetProgressBar" class="h-full bg-emerald-500 rounded-full transition-all duration-500" style="width: 0%"></div>
+                </div>
+                <p id="budgetRemainingText" class="text-xs text-zinc-400 mt-2.5 font-medium">Rimanenti: 1.000,00 €</p>
+            </div>
+
+            <!-- Card Suddivisione per Categorie -->
+            <div class="bg-white rounded-3xl p-5 shadow-xs border border-zinc-200/70">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="font-bold text-zinc-900 text-sm flex items-center gap-2">
+                        <span class="w-7 h-7 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                            <i data-lucide="pie-chart" class="w-4 h-4"></i>
+                        </span>
+                        Ripartizione Spese
+                    </h3>
+                    <span id="itemsCountBadge" class="text-[11px] font-bold bg-zinc-100 text-zinc-600 px-2.5 py-1 rounded-full">0 voci</span>
+                </div>
+                
+                <div id="categoryBreakdownList" class="space-y-3">
+                    <!-- Popolato dinamicamente via JS -->
+                </div>
+            </div>
+
+            <!-- Card Report & Consigli IA -->
+            <div class="bg-white rounded-3xl p-5 shadow-xs border border-zinc-200/70">
+                <div class="flex items-center gap-2.5 mb-2">
+                    <div class="w-9 h-9 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white flex items-center justify-center shrink-0 shadow-xs">
+                        <i data-lucide="sparkles" class="w-4 h-4"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-sm text-zinc-900">Consulente Finanziario IA</h3>
+                        <p class="text-[11px] text-zinc-500">Analisi abitudini, extra, sigarette e consigli</p>
+                    </div>
+                </div>
+
+                <button id="generateAdviceBtn" onclick="generateMonthlyReport()" class="w-full mt-3 bg-zinc-950 hover:bg-zinc-800 text-white font-bold text-xs py-3.5 px-4 rounded-2xl shadow-sm transition active:scale-[0.98] flex items-center justify-center gap-2">
+                    <i data-lucide="wand-2" class="w-4 h-4 text-emerald-400"></i>
+                    <span>Genera Report e Consigli del Mese</span>
+                </button>
+
+                <!-- Risultato Report IA -->
+                <div id="aiReportContainer" class="hidden mt-4 pt-4 border-t border-zinc-100 text-xs text-zinc-700 leading-relaxed space-y-2.5">
+                    <!-- Popolato da Gemini -->
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== TAB 2: SCANSIONA SCONTRINO O APPLE PAY ==================== -->
+        <section id="tab-scan" class="hidden space-y-4">
+            
+            <!-- Area Fotocamera / Screenshot Apple Pay -->
+            <div class="bg-white rounded-3xl p-5 shadow-xs border border-zinc-200/70 text-center">
+                <div class="inline-flex items-center gap-2 bg-zinc-100 p-1.5 rounded-2xl mb-3">
+                    <div class="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center shadow-xs">
+                        <i data-lucide="camera" class="w-5 h-5"></i>
+                    </div>
+                    <div class="w-10 h-10 rounded-xl bg-zinc-950 text-white flex items-center justify-center shadow-xs">
+                        <i data-lucide="wallet" class="w-5 h-5"></i>
+                    </div>
+                </div>
+                <h2 class="font-bold text-zinc-900 text-base">Acquisizione Rapida IA</h2>
+                <p class="text-xs text-zinc-500 mt-1 mb-4">
+                    Fotografa uno scontrino oppure seleziona uno o più <strong>screenshot di Apple Pay / Wallet</strong>.
+                </p>
+
+                <input type="file" id="receiptInput" accept="image/*" capture="environment" class="hidden" onchange="handleReceiptUpload(event)">
+                <input type="file" id="galleryInput" accept="image/*" multiple class="hidden" onchange="handleReceiptUpload(event)">
+                
+                <div class="grid grid-cols-2 gap-2.5">
+                    <button onclick="document.getElementById('receiptInput').click()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 px-3 rounded-2xl shadow-sm transition active:scale-[0.98] flex flex-col items-center justify-center gap-1.5 text-xs">
+                        <i data-lucide="camera" class="w-5 h-5"></i>
+                        <span>Foto Scontrino</span>
+                    </button>
+
+                    <button onclick="document.getElementById('galleryInput').click()" class="w-full bg-zinc-950 hover:bg-zinc-800 text-white font-bold py-3.5 px-3 rounded-2xl shadow-sm transition active:scale-[0.98] flex flex-col items-center justify-center gap-1.5 text-xs">
+                        <i data-lucide="smartphone" class="w-5 h-5 text-emerald-400"></i>
+                        <span>Apple Pay / Foto</span>
+                    </button>
+                </div>
+
+                <!-- Anteprima e Stato Caricamento IA -->
+                <div id="scanPreviewBox" class="hidden mt-4 pt-4 border-t border-zinc-100">
+                    <div class="relative rounded-2xl overflow-hidden bg-zinc-950 max-h-56 flex items-center justify-center">
+                        <img id="receiptPreviewImg" src="" alt="Anteprima" class="max-h-56 w-auto object-contain opacity-75">
+                        
+                        <div id="scanLoadingOverlay" class="absolute inset-0 bg-zinc-950/75 backdrop-blur-xs flex flex-col items-center justify-center text-white p-4">
+                            <div class="w-10 h-10 rounded-full border-3 border-emerald-400 border-t-transparent animate-spin mb-2.5"></div>
+                            <p id="scanLoadingTitle" class="font-bold text-xs">Lettura con IA in corso...</p>
+                            <p class="text-[11px] text-zinc-300 mt-0.5">Estrazione importi e categorie</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form Inserimento Manuale Rapido -->
+            <div class="bg-white rounded-3xl p-5 shadow-xs border border-zinc-200/70">
+                <h3 class="font-bold text-zinc-900 text-sm mb-3 flex items-center gap-2">
+                    <i data-lucide="plus-circle" class="w-4 h-4 text-emerald-600"></i>
+                    Inserimento Manuale
+                </h3>
+                <form onsubmit="handleManualAdd(event)" class="space-y-3">
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="block text-[11px] font-semibold text-zinc-500 mb-1">Negozio</label>
+                            <input type="text" id="manualStore" required placeholder="Es. Eni / Bar" class="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-3 py-2.5 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-semibold text-zinc-500 mb-1">Data</label>
+                            <input type="date" id="manualDate" required class="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-2.5 py-2.5 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-[11px] font-semibold text-zinc-500 mb-1">Descrizione</label>
+                        <input type="text" id="manualDesc" required placeholder="Es. Pieno benzina / Sigarette" class="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-3 py-2.5 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="block text-[11px] font-semibold text-zinc-500 mb-1">Importo (€)</label>
+                            <input type="number" id="manualPrice" step="0.01" min="0.01" required placeholder="20.00" class="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-3 py-2.5 text-xs font-bold focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-semibold text-zinc-500 mb-1">Categoria</label>
+                            <select id="manualCategory" class="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-2.5 py-2.5 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                                <option value="Alimentari">Alimentari</option>
+                                <option value="Ristoranti/Bar">Ristoranti/Bar</option>
+                                <option value="Sigarette">Sigarette</option>
+                                <option value="Benzina">Benzina</option>
+                                <option value="Trasporti">Trasporti</option>
+                                <option value="Bollette/Casa">Bollette/Casa</option>
+                                <option value="Shopping">Shopping</option>
+                                <option value="Salute">Salute</option>
+                                <option value="Svago">Svago</option>
+                                <option value="Altro">Altro</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="w-full bg-zinc-950 hover:bg-zinc-800 text-white font-bold py-3 rounded-xl text-xs transition active:scale-[0.98]">
+                        Salva Spesa
+                    </button>
+                </form>
+            </div>
+        </section>
+
+        <!-- ==================== TAB 3: REGISTRO & ESPORTA EXCEL ==================== -->
+        <section id="tab-list" class="hidden space-y-3.5">
+            
+            <!-- Barra Esportazione Excel / CSV -->
+            <div class="bg-white rounded-3xl p-4 shadow-xs border border-zinc-200/70 flex items-center justify-between gap-2">
+                <div class="min-w-0">
+                    <h2 class="font-bold text-zinc-900 text-sm truncate">Registro Spese</h2>
+                    <p class="text-[11px] text-zinc-500 truncate">Compatibile Excel e Google Fogli</p>
+                </div>
+                <button onclick="exportToCSV()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-3.5 py-2.5 rounded-xl shadow-xs transition active:scale-95 flex items-center gap-1.5 shrink-0">
+                    <i data-lucide="file-spreadsheet" class="w-4 h-4"></i>
+                    <span>Esporta Excel</span>
+                </button>
+            </div>
+
+            <!-- Filtri Categoria Scorrevoli -->
+            <div class="flex gap-1.5 overflow-x-auto pb-1 no-scrollbar">
+                <button onclick="setCategoryFilter('Tutte')" data-cat-btn="Tutte" class="cat-filter-btn bg-zinc-950 text-white text-xs font-semibold px-3 py-2 rounded-xl shrink-0 transition">Tutte</button>
+                <button onclick="setCategoryFilter('Sigarette')" data-cat-btn="Sigarette" class="cat-filter-btn bg-white text-zinc-600 border border-zinc-200 text-xs font-semibold px-3 py-2 rounded-xl shrink-0 transition">🚬 Sigarette</button>
+                <button onclick="setCategoryFilter('Benzina')" data-cat-btn="Benzina" class="cat-filter-btn bg-white text-zinc-600 border border-zinc-200 text-xs font-semibold px-3 py-2 rounded-xl shrink-0 transition">⛽ Benzina</button>
+                <button onclick="setCategoryFilter('Alimentari')" data-cat-btn="Alimentari" class="cat-filter-btn bg-white text-zinc-600 border border-zinc-200 text-xs font-semibold px-3 py-2 rounded-xl shrink-0 transition">🛒 Alimentari</button>
+                <button onclick="setCategoryFilter('Ristoranti/Bar')" data-cat-btn="Ristoranti/Bar" class="cat-filter-btn bg-white text-zinc-600 border border-zinc-200 text-xs font-semibold px-3 py-2 rounded-xl shrink-0 transition">☕ Bar</button>
+                <button onclick="setCategoryFilter('Trasporti')" data-cat-btn="Trasporti" class="cat-filter-btn bg-white text-zinc-600 border border-zinc-200 text-xs font-semibold px-3 py-2 rounded-xl shrink-0 transition">🚆 Trasporti</button>
+            </div>
+
+            <!-- Lista Voci -->
+            <div id="expensesListContainer" class="space-y-2">
+                <!-- Popolato dinamicamente via JS -->
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ==================== BOTTOM NAVIGATION BAR (OTTIMIZZATA IPHONE 16) ==================== -->
+    <nav class="bottom-nav fixed bottom-0 inset-x-0 z-30 bg-white/95 backdrop-blur-md border-t border-zinc-200/80">
+        <div class="max-w-md mx-auto grid grid-cols-3 pt-2">
+            <button onclick="switchTab('dashboard')" id="nav-dashboard" class="flex flex-col items-center justify-center gap-1 text-emerald-600 font-bold transition">
+                <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
+                <span class="text-[10px]">Panoramica</span>
+            </button>
+
+            <button onclick="switchTab('scan')" id="nav-scan" class="flex flex-col items-center justify-center gap-1 text-zinc-500 font-semibold transition relative">
+                <div class="w-12 h-12 -mt-6 rounded-2xl bg-zinc-950 text-emerald-400 shadow-lg border-2 border-white flex items-center justify-center">
+                    <i data-lucide="scan-line" class="w-5 h-5"></i>
+                </div>
+                <span class="text-[10px] font-bold text-zinc-900">Aggiungi</span>
+            </button>
+
+            <button onclick="switchTab('list')" id="nav-list" class="flex flex-col items-center justify-center gap-1 text-zinc-400 hover:text-zinc-600 font-semibold transition">
+                <i data-lucide="table-properties" class="w-5 h-5"></i>
+                <span class="text-[10px]">Registro</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- ==================== MODALE LOGO PERSONALIZZATO & INSTALLAZIONE IPHONE ==================== -->
+    <div id="iosInstallModal" class="hidden fixed inset-0 z-50 bg-zinc-950/70 backdrop-blur-xs flex items-end sm:items-center justify-center p-3">
+        <div class="bg-white w-full max-w-md rounded-3xl p-5 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between">
+                <h3 class="font-bold text-base text-zinc-900">Logo App & Home iPhone</h3>
+                <button onclick="toggleIosModal(false)" class="p-2 rounded-full bg-zinc-100 text-zinc-500">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            </div>
+
+            <!-- Sezione Personalizzazione Icona Home Screen -->
+            <div class="bg-zinc-50 border border-zinc-200/80 rounded-2xl p-4 space-y-3">
+                <div class="flex items-center gap-3">
+                    <img id="modalLogoPreview" src="" alt="Anteprima icona" class="w-16 h-16 rounded-2xl object-cover shadow-md border border-zinc-200 shrink-0 bg-white">
+                    <div>
+                        <p class="text-xs font-bold text-zinc-900">Icona sulla Schermata Home</p>
+                        <p class="text-[11px] text-zinc-500 mt-0.5">Scegli una foto dalla tua galleria o creane una con l'IA prima di aggiungerla alla Home.</p>
+                    </div>
+                </div>
+
+                <input type="file" id="customLogoInput" accept="image/*" class="hidden" onchange="handleCustomLogoUpload(event)">
+                
+                <div class="grid grid-cols-2 gap-2">
+                    <button onclick="document.getElementById('customLogoInput').click()" class="bg-white hover:bg-zinc-100 text-zinc-900 border border-zinc-200 font-bold text-xs py-2.5 px-3 rounded-xl flex items-center justify-center gap-1.5 active:scale-95 transition">
+                        <i data-lucide="image" class="w-4 h-4 text-emerald-600"></i>
+                        <span>Scegli Foto</span>
+                    </button>
+
+                    <button id="generateLogoBtn" onclick="generateAiLogo()" class="bg-zinc-950 hover:bg-zinc-800 text-white font-bold text-xs py-2.5 px-3 rounded-xl flex items-center justify-center gap-1.5 active:scale-95 transition">
+                        <i data-lucide="sparkles" class="w-4 h-4 text-emerald-400"></i>
+                        <span>Crea Logo IA</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Istruzioni Aggiungi alla Schermata Home -->
+            <ol class="space-y-2.5 text-xs text-zinc-700 bg-emerald-50/60 p-3.5 rounded-2xl border border-emerald-100">
+                <li class="flex items-start gap-2.5">
+                    <span class="w-5 h-5 rounded-full bg-emerald-600 text-white text-[11px] font-bold flex items-center justify-center shrink-0 mt-0.5">1</span>
+                    <span>Imposta qui sopra il logo che preferisci per l'icona dell'app.</span>
+                </li>
+                <li class="flex items-start gap-2.5">
+                    <span class="w-5 h-5 rounded-full bg-emerald-600 text-white text-[11px] font-bold flex items-center justify-center shrink-0 mt-0.5">2</span>
+                    <span>In <strong>Safari</strong> tocca <strong>Condividi</strong> (quadrato con freccia in su) in basso.</span>
+                </li>
+                <li class="flex items-start gap-2.5">
+                    <span class="w-5 h-5 rounded-full bg-emerald-600 text-white text-[11px] font-bold flex items-center justify-center shrink-0 mt-0.5">3</span>
+                    <span>Tocca <strong>"Aggiungi alla schermata Home"</strong>: apparirà con la tua immagine!</span>
+                </li>
+            </ol>
+
+            <button onclick="toggleIosModal(false)" class="w-full bg-zinc-950 text-white font-bold py-3 rounded-2xl text-xs">
+                Fatto
+            </button>
+        </div>
+    </div>
+
+    <!-- ==================== MODALE MODIFICA BUDGET ==================== -->
+    <div id="budgetModal" class="hidden fixed inset-0 z-50 bg-zinc-950/70 backdrop-blur-xs flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-sm rounded-3xl p-5 shadow-2xl space-y-4">
+            <h3 class="font-bold text-base text-zinc-900">Imposta Budget Mensile</h3>
+            <div>
+                <label class="block text-xs font-semibold text-zinc-500 mb-1">Tetto di spesa in Euro (€)</label>
+                <input type="number" id="budgetInput" min="10" step="10" class="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 text-lg font-bold text-zinc-900 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+            </div>
+            <div class="flex gap-2">
+                <button onclick="closeBudgetModal()" class="flex-1 bg-zinc-100 text-zinc-700 font-semibold py-3 rounded-xl text-xs">Annulla</button>
+                <button onclick="saveBudget()" class="flex-1 bg-emerald-600 text-white font-bold py-3 rounded-xl text-xs">Salva</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== MODALE CHIAVE API GEMINI ==================== -->
+    <div id="apiKeyModal" class="hidden fixed inset-0 z-50 bg-zinc-950/70 backdrop-blur-xs flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-sm rounded-3xl p-5 shadow-2xl space-y-3.5">
+            <div class="flex items-center gap-2">
+                <div class="w-8 h-8 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center">
+                    <i data-lucide="key-round" class="w-4 h-4"></i>
+                </div>
+                <h3 class="font-bold text-base text-zinc-900">Chiave API Gemini</h3>
+            </div>
+            <p class="text-xs text-zinc-600 leading-relaxed">
+                Ottieni la chiave gratuita su <strong>aistudio.google.com</strong> (<em>Get API key → Create API key</em>) e incollala qui sotto:
+            </p>
+            <input type="password" id="apiKeyInput" placeholder="Incolla qui AIzaSy..." class="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-3.5 py-3 text-xs font-mono text-zinc-900 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+            <div class="flex gap-2 pt-1">
+                <button onclick="closeApiKeyModal()" class="flex-1 bg-zinc-100 text-zinc-700 font-semibold py-3 rounded-xl text-xs">Chiudi</button>
+                <button onclick="saveApiKey()" class="flex-1 bg-zinc-950 text-white font-bold py-3 rounded-xl text-xs">Salva Chiave</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== LOGICA JAVASCRIPT ==================== -->
+    <script>
+        const envApiKey = "";
+        const GEMINI_MODEL = "gemini-3-flash-preview";
+        const GEMINI_IMAGE_MODEL = "gemini-3.1-flash-lite-image";
+
+        const DEFAULT_LOGO_SVG = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0%25' stop-color='%2310b981'/%3E%3Cstop offset='100%25' stop-color='%23047857'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='180' height='180' rx='40' fill='url(%23g)'/%3E%3Cpath d='M56 44h68v92l-11-7-11 7-12-7-12 7-11-7-11 7V44z' fill='%23ffffff'/%3E%3Crect x='70' y='66' width='40' height='7' rx='3.5' fill='%23059669'/%3E%3Crect x='70' y='84' width='40' height='7' rx='3.5' fill='%23059669'/%3E%3Crect x='70' y='102' width='24' height='7' rx='3.5' fill='%2310b981'/%3E%3C/svg%3E";
+
+        const CATEGORIES = {
+            "Alimentari": { color: "bg-emerald-100 text-emerald-700", bar: "bg-emerald-500", icon: "shopping-cart" },
+            "Ristoranti/Bar": { color: "bg-amber-100 text-amber-700", bar: "bg-amber-500", icon: "coffee" },
+            "Sigarette": { color: "bg-rose-100 text-rose-700", bar: "bg-rose-500", icon: "cigarette" },
+            "Benzina": { color: "bg-cyan-100 text-cyan-700", bar: "bg-cyan-500", icon: "fuel" },
+            "Trasporti": { color: "bg-sky-100 text-sky-700", bar: "bg-sky-500", icon: "train-front" },
+            "Bollette/Casa": { color: "bg-indigo-100 text-indigo-700", bar: "bg-indigo-500", icon: "home" },
+            "Shopping": { color: "bg-purple-100 text-purple-700", bar: "bg-purple-500", icon: "shopping-bag" },
+            "Salute": { color: "bg-teal-100 text-teal-700", bar: "bg-teal-500", icon: "heart-pulse" },
+            "Svago": { color: "bg-orange-100 text-orange-700", bar: "bg-orange-500", icon: "film" },
+            "Altro": { color: "bg-zinc-100 text-zinc-700", bar: "bg-zinc-500", icon: "package" }
+        };
+
+        let expenses = [];
+        let monthlyBudget = 1000;
+        let selectedMonth = "";
+        let selectedCategoryFilter = "Tutte";
+        let toastTimeout = null;
+
+        function getActiveApiKey() {
+            return localStorage.getItem('scontrino_smart_api_key') || envApiKey;
+        }
+
+        function showToast(message, isError = false) {
+            const container = document.getElementById('toastContainer');
+            const box = document.getElementById('toastBox');
+            const msgEl = document.getElementById('toastMessage');
+            const iconEl = document.getElementById('toastIcon');
+
+            msgEl.textContent = message;
+            if (isError) {
+                box.className = "bg-rose-600 text-white px-4 py-3 rounded-2xl shadow-2xl flex items-center gap-3 text-xs font-semibold";
+                iconEl.setAttribute('data-lucide', 'alert-circle');
+                iconEl.className = "w-4 h-4 text-white shrink-0";
+            } else {
+                box.className = "bg-zinc-900 text-white px-4 py-3 rounded-2xl shadow-2xl border border-zinc-800 flex items-center gap-3 text-xs font-semibold";
+                iconEl.setAttribute('data-lucide', 'check-circle-2');
+                iconEl.className = "w-4 h-4 text-emerald-400 shrink-0";
+            }
+            lucide.createIcons();
+
+            container.classList.remove('opacity-0', '-translate-y-4');
+            if (toastTimeout) clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => {
+                container.classList.add('opacity-0', '-translate-y-4');
+            }, 3200);
+        }
+
+        // Gestione Logo Personalizzato per Home Screen iPhone
+        function applySavedLogo() {
+            const savedLogo = localStorage.getItem('scontrino_smart_custom_logo') || DEFAULT_LOGO_SVG;
+            document.getElementById('appleTouchIcon').setAttribute('href', savedLogo);
+            document.getElementById('headerLogoImg').src = savedLogo;
+            document.getElementById('modalLogoPreview').src = savedLogo;
+        }
+
+        async function handleCustomLogoUpload(event) {
+            const file = event.target.files?.[0];
+            if (!file) return;
+
+            try {
+                // Ritaglia e ridimensiona l'immagine in formato quadrato 256x256 PNG (perfetto per iOS Home Screen)
+                const squarePngDataUrl = await createSquareIconDataUrl(file, 256);
+                localStorage.setItem('scontrino_smart_custom_logo', squarePngDataUrl);
+                applySavedLogo();
+                showToast('Nuovo logo applicato! Ora aggiungila alla Home.');
+            } catch (e) {
+                showToast('Errore nel caricamento dell\'immagine.', true);
+            } finally {
+                event.target.value = '';
+            }
+        }
+
+        function createSquareIconDataUrl(file, size) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        canvas.width = size;
+                        canvas.height = size;
+                        const ctx = canvas.getContext('2d');
+
+                        // Ritaglio centrato quadrato (aspect-fill)
+                        const minSide = Math.min(img.width, img.height);
+                        const sx = (img.width - minSide) / 2;
+                        const sy = (img.height - minSide) / 2;
+
+                        ctx.drawImage(img, sx, sy, minSide, minSide, 0, 0, size, size);
+                        resolve(canvas.toDataURL('image/png'));
+                    };
+                    img.onerror = reject;
+                    img.src = e.target.result;
+                };
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+        }
+
+        async function generateAiLogo() {
+            const btn = document.getElementById('generateLogoBtn');
+            btn.disabled = true;
+            btn.innerHTML = `<div class="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></div><span>Creazione...</span>`;
+
+            try {
+                const activeKey = getActiveApiKey();
+                const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_IMAGE_MODEL}:generateContent?key=${activeKey}`;
+                const payload = {
+                    contents: [{
+                        parts: [{ text: "Minimalist luxury iOS app icon for a personal expense tracker, sleek emerald green and obsidian black geometric wallet and receipt symbol, glossy modern 3D glassmorphism style, centered, no text" }]
+                    }],
+                    generationConfig: {
+                        responseModalities: ['TEXT', 'IMAGE']
+                    }
+                };
+
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) throw new Error('Errore API Immagine');
+                const result = await response.json();
+                const base64Data = result?.candidates?.[0]?.content?.parts?.find(p => p.inlineData)?.inlineData?.data;
+
+                if (base64Data) {
+                    const dataUrl = `data:image/png;base64,${base64Data}`;
+                    localStorage.setItem('scontrino_smart_custom_logo', dataUrl);
+                    applySavedLogo();
+                    showToast('Logo IA generato! Ora aggiungila alla Home.');
+                } else {
+                    throw new Error('Nessuna immagine restituita');
+                }
+            } catch (err) {
+                if (!getActiveApiKey()) {
+                    showToast('Inserisci prima la Chiave API in alto!', true);
+                    openApiKeyModal();
+                } else {
+                    showToast('Impossibile generare il logo ora.', true);
+                }
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = `<i data-lucide="sparkles" class="w-4 h-4 text-emerald-400"></i><span>Crea Logo IA</span>`;
+                lucide.createIcons();
+            }
+        }
+
+        function loadDataFromStorage() {
+            const savedExpenses = localStorage.getItem('scontrino_smart_expenses');
+            const savedBudget = localStorage.getItem('scontrino_smart_budget');
+
+            if (savedBudget) {
+                monthlyBudget = parseFloat(savedBudget) || 1000;
+            }
+
+            if (savedExpenses) {
+                try {
+                    expenses = JSON.parse(savedExpenses);
+                } catch (e) {
+                    expenses = [];
+                }
+            } else {
+                const today = new Date().toISOString().split('T')[0];
+                expenses = [
+                    { id: Date.now() + 1, date: today, store: 'Esselunga', description: 'Spesa settimanale', price: 34.80, category: 'Alimentari' },
+                    { id: Date.now() + 2, date: today, store: 'Tabaccheria', description: 'Sigarette', price: 6.20, category: 'Sigarette' },
+                    { id: Date.now() + 3, date: today, store: 'Eni Station', description: 'Rifornimento Benzina', price: 30.00, category: 'Benzina' }
+                ];
+                saveExpenses();
+            }
+        }
+
+        function saveExpenses() {
+            localStorage.setItem('scontrino_smart_expenses', JSON.stringify(expenses));
+        }
+
+        function initMonthSelector() {
+            const select = document.getElementById('monthFilter');
+            const currentYM = new Date().toISOString().slice(0, 7);
+            const monthsSet = new Set([currentYM]);
+
+            expenses.forEach(exp => {
+                if (exp.date && exp.date.length >= 7) {
+                    monthsSet.add(exp.date.slice(0, 7));
+                }
+            });
+
+            const sortedMonths = Array.from(monthsSet).sort().reverse();
+            const monthNames = ['Gen', 'Feb', 'Mar', 'Apr', 'Mag', 'Giu', 'Lug', 'Ago', 'Set', 'Ott', 'Nov', 'Dic'];
+
+            select.innerHTML = '';
+            sortedMonths.forEach(ym => {
+                const [year, month] = ym.split('-');
+                const label = `${monthNames[parseInt(month, 10) - 1]} ${year}`;
+                const opt = document.createElement('option');
+                opt.value = ym;
+                opt.textContent = ym === currentYM ? `${label}` : label;
+                select.appendChild(opt);
+            });
+
+            const allOpt = document.createElement('option');
+            allOpt.value = 'ALL';
+            allOpt.textContent = 'Tutti i mesi';
+            select.appendChild(allOpt);
+
+            if (!selectedMonth) selectedMonth = currentYM;
+            select.value = selectedMonth;
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            applySavedLogo();
+            loadDataFromStorage();
+            initMonthSelector();
+            document.getElementById('manualDate').value = new Date().toISOString().split('T')[0];
+            updateApiKeyIndicator();
+            renderAll();
+            lucide.createIcons();
+        });
+
+        function handleMonthChange() {
+            selectedMonth = document.getElementById('monthFilter').value;
+            document.getElementById('aiReportContainer').classList.add('hidden');
+            renderAll();
+        }
+
+        function getFilteredExpenses() {
+            return expenses.filter(exp => {
+                const matchMonth = selectedMonth === 'ALL' || (exp.date && exp.date.startsWith(selectedMonth));
+                const matchCat = selectedCategoryFilter === 'Tutte' || exp.category === selectedCategoryFilter;
+                return matchMonth && matchCat;
+            }).sort((a, b) => new Date(b.date) - new Date(a.date));
+        }
+
+        function getMonthExpensesOnly() {
+            return expenses.filter(exp => selectedMonth === 'ALL' || (exp.date && exp.date.startsWith(selectedMonth)));
+        }
+
+        function formatEuro(amount) {
+            return new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR' }).format(amount);
+        }
+
+        function switchTab(tabName) {
+            ['dashboard', 'scan', 'list'].forEach(t => {
+                document.getElementById(`tab-${t}`).classList.add('hidden');
+                const navBtn = document.getElementById(`nav-${t}`);
+                if (t !== 'scan') {
+                    navBtn.classList.remove('text-emerald-600', 'font-bold');
+                    navBtn.classList.add('text-zinc-400', 'font-semibold');
+                }
+            });
+
+            document.getElementById(`tab-${tabName}`).classList.remove('hidden');
+            if (tabName !== 'scan') {
+                const activeBtn = document.getElementById(`nav-${tabName}`);
+                activeBtn.classList.remove('text-zinc-400');
+                activeBtn.classList.add('text-emerald-600', 'font-bold');
+            }
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function renderAll() {
+            renderDashboard();
+            renderExpensesList();
+            lucide.createIcons();
+        }
+
+        function renderDashboard() {
+            const monthItems = getMonthExpensesOnly();
+            const totalSpent = monthItems.reduce((sum, item) => sum + Number(item.price), 0);
+            
+            document.getElementById('totalSpentDisplay').textContent = formatEuro(totalSpent);
+            document.getElementById('budgetDisplay').textContent = formatEuro(monthlyBudget);
+            document.getElementById('itemsCountBadge').textContent = `${monthItems.length} ${monthItems.length === 1 ? 'voce' : 'voci'}`;
+
+            const pct = monthlyBudget > 0 ? Math.min(100, Math.round((totalSpent / monthlyBudget) * 100)) : 0;
+            const realPct = monthlyBudget > 0 ? Math.round((totalSpent / monthlyBudget) * 100) : 0;
+            const bar = document.getElementById('budgetProgressBar');
+            bar.style.width = `${pct}%`;
+            
+            bar.classList.remove('bg-emerald-500', 'bg-amber-500', 'bg-rose-500');
+            if (realPct >= 90) bar.classList.add('bg-rose-500');
+            else if (realPct >= 70) bar.classList.add('bg-amber-500');
+            else bar.classList.add('bg-emerald-500');
+
+            document.getElementById('budgetPercentageText').textContent = `${realPct}%`;
+            const remaining = monthlyBudget - totalSpent;
+            const remEl = document.getElementById('budgetRemainingText');
+            if (remaining >= 0) {
+                remEl.textContent = `Rimanenti: ${formatEuro(remaining)}`;
+                remEl.className = 'text-xs text-zinc-400 mt-2.5 font-medium';
+            } else {
+                remEl.textContent = `Superato di ${formatEuro(Math.abs(remaining))}`;
+                remEl.className = 'text-xs text-rose-400 mt-2.5 font-bold';
+            }
+
+            const breakdownContainer = document.getElementById('categoryBreakdownList');
+            if (monthItems.length === 0) {
+                breakdownContainer.innerHTML = `<p class="text-xs text-zinc-400 text-center py-4">Nessuna spesa in questo periodo.</p>`;
+                return;
+            }
+
+            const totalsByCat = {};
+            monthItems.forEach(item => {
+                totalsByCat[item.category] = (totalsByCat[item.category] || 0) + Number(item.price);
+            });
+
+            const sortedCats = Object.entries(totalsByCat).sort((a, b) => b[1] - a[1]);
+
+            breakdownContainer.innerHTML = sortedCats.map(([cat, amount]) => {
+                const catInfo = CATEGORIES[cat] || CATEGORIES['Altro'];
+                const catPct = totalSpent > 0 ? Math.round((amount / totalSpent) * 100) : 0;
+
+                return `
+                    <div>
+                        <div class="flex items-center justify-between text-xs mb-1.5">
+                            <div class="flex items-center gap-2 font-bold text-zinc-800">
+                                <span class="w-6 h-6 rounded-lg ${catInfo.color} flex items-center justify-center">
+                                    <i data-lucide="${catInfo.icon}" class="w-3.5 h-3.5"></i>
+                                </span>
+                                <span>${cat}</span>
+                            </div>
+                            <div>
+                                <span class="font-extrabold text-zinc-900">${formatEuro(amount)}</span>
+                                <span class="text-zinc-400 ml-1 text-[11px]">${catPct}%</span>
+                            </div>
+                        </div>
+                        <div class="w-full h-1.5 bg-zinc-100 rounded-full overflow-hidden">
+                            <div class="h-full ${catInfo.bar} rounded-full" style="width: ${catPct}%"></div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function setCategoryFilter(cat) {
+            selectedCategoryFilter = cat;
+            document.querySelectorAll('.cat-filter-btn').forEach(btn => {
+                if (btn.dataset.catBtn === cat) {
+                    btn.className = 'cat-filter-btn bg-zinc-950 text-white text-xs font-semibold px-3 py-2 rounded-xl shrink-0 transition';
+                } else {
+                    btn.className = 'cat-filter-btn bg-white text-zinc-600 border border-zinc-200 text-xs font-semibold px-3 py-2 rounded-xl shrink-0 transition';
+                }
+            });
+            renderExpensesList();
+            lucide.createIcons();
+        }
+
+        function renderExpensesList() {
+            const container = document.getElementById('expensesListContainer');
+            const filtered = getFilteredExpenses();
+
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div class="bg-white rounded-3xl p-8 text-center border border-zinc-200/70">
+                        <p class="text-xs font-bold text-zinc-700">Nessuna spesa trovata</p>
+                        <p class="text-[11px] text-zinc-400 mt-1">Tocca "Aggiungi" in basso per iniziare.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = filtered.map(item => {
+                const catInfo = CATEGORIES[item.category] || CATEGORIES['Altro'];
+                const formattedDate = new Date(item.date).toLocaleDateString('it-IT', { day: '2-digit', month: 'short' });
+
+                return `
+                    <div class="bg-white rounded-2xl p-3.5 shadow-xs border border-zinc-200/70 flex items-center justify-between gap-2.5">
+                        <div class="flex items-center gap-2.5 min-w-0">
+                            <div class="w-9 h-9 rounded-xl ${catInfo.color} flex items-center justify-center shrink-0">
+                                <i data-lucide="${catInfo.icon}" class="w-4 h-4"></i>
+                            </div>
+                            <div class="min-w-0">
+                                <p class="font-bold text-xs text-zinc-900 truncate">${escapeHtml(item.description)}</p>
+                                <div class="flex items-center gap-1 text-[11px] text-zinc-500 mt-0.5 truncate">
+                                    <span class="font-semibold text-zinc-700 truncate">${escapeHtml(item.store)}</span>
+                                    <span>•</span>
+                                    <span class="shrink-0">${formattedDate}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-1.5 shrink-0">
+                            <span class="font-extrabold text-xs text-zinc-900">${formatEuro(item.price)}</span>
+                            <button onclick="deleteExpense(${item.id})" aria-label="Elimina" class="p-1.5 text-zinc-300 hover:text-rose-500 transition active:scale-90">
+                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function deleteExpense(id) {
+            expenses = expenses.filter(e => e.id !== id);
+            saveExpenses();
+            renderAll();
+            showToast('Voce eliminata');
+        }
+
+        function handleManualAdd(e) {
+            e.preventDefault();
+            const store = document.getElementById('manualStore').value.trim();
+            const date = document.getElementById('manualDate').value;
+            const description = document.getElementById('manualDesc').value.trim();
+            const price = parseFloat(document.getElementById('manualPrice').value);
+            const category = document.getElementById('manualCategory').value;
+
+            if (!store || !description || isNaN(price) || price <= 0) return;
+
+            expenses.unshift({
+                id: Date.now(),
+                date: date,
+                store: store,
+                description: description,
+                price: price,
+                category: category
+            });
+
+            saveExpenses();
+            initMonthSelector();
+            selectedMonth = date.slice(0, 7);
+            document.getElementById('monthFilter').value = selectedMonth;
+            renderAll();
+
+            e.target.reset();
+            document.getElementById('manualDate').value = new Date().toISOString().split('T')[0];
+            showToast('Spesa aggiunta!');
+            switchTab('list');
+        }
+
+        // ==================== SCANSIONE SCONTRINO O APPLE PAY ====================
+        async function handleReceiptUpload(event) {
+            const files = Array.from(event.target.files || []);
+            if (files.length === 0) return;
+
+            const previewBox = document.getElementById('scanPreviewBox');
+            const previewImg = document.getElementById('receiptPreviewImg');
+            const loadingOverlay = document.getElementById('scanLoadingOverlay');
+            const loadingTitle = document.getElementById('scanLoadingTitle');
+
+            previewBox.classList.remove('hidden');
+            loadingOverlay.classList.remove('hidden');
+
+            let totalAdded = 0;
+            let lastMonth = selectedMonth;
+
+            try {
+                for (let i = 0; i < files.length; i++) {
+                    const file = files[i];
+                    loadingTitle.textContent = files.length > 1
+                        ? `Analisi immagine ${i + 1} di ${files.length}...`
+                        : 'Lettura immagine con IA...';
+
+                    const { base64Data, mimeType, dataUrl } = await compressImageForAI(file, 1400, 0.85);
+                    previewImg.src = dataUrl;
+
+                    const extractedData = await analyzeReceiptWithGemini(base64Data, mimeType);
+                    
+                    if (extractedData && Array.isArray(extractedData.voci) && extractedData.voci.length > 0) {
+                        const todayStr = new Date().toISOString().split('T')[0];
+
+                        extractedData.voci.forEach((voce, idx) => {
+                            const priceVal = parseFloat(voce.prezzo);
+                            if (!isNaN(priceVal) && priceVal > 0) {
+                                const validCat = CATEGORIES[voce.categoria] ? voce.categoria : 'Altro';
+                                const itemDate = (voce.data && /^\d{4}-\d{2}-\d{2}$/.test(voce.data))
+                                    ? voce.data
+                                    : ((extractedData.data && /^\d{4}-\d{2}-\d{2}$/.test(extractedData.data)) ? extractedData.data : todayStr);
+                                const itemStore = voce.negozio || extractedData.negozio || 'Apple Pay';
+
+                                expenses.unshift({
+                                    id: Date.now() + (i * 100) + idx,
+                                    date: itemDate,
+                                    store: itemStore,
+                                    description: voce.descrizione || 'Pagamento',
+                                    price: priceVal,
+                                    category: validCat
+                                });
+                                totalAdded++;
+                                lastMonth = itemDate.substring(0, 7);
+                            }
+                        });
+                    }
+                }
+
+                if (totalAdded > 0) {
+                    saveExpenses();
+                    initMonthSelector();
+                    selectedMonth = lastMonth;
+                    document.getElementById('monthFilter').value = selectedMonth;
+                    renderAll();
+
+                    showToast(`Aggiunte ${totalAdded} ${totalAdded === 1 ? 'spesa' : 'spese'}!`);
+                    setTimeout(() => switchTab('list'), 600);
+                } else {
+                    showToast('Nessuna spesa leggibile trovata.', true);
+                }
+            } catch (err) {
+                console.error(err);
+                if (!getActiveApiKey()) {
+                    showToast('Inserisci prima la Chiave API in alto!', true);
+                    openApiKeyModal();
+                } else {
+                    showToast('Errore lettura immagine. Verifica la chiave API.', true);
+                }
+            } finally {
+                loadingOverlay.classList.add('hidden');
+                event.target.value = '';
+            }
+        }
+
+        function compressImageForAI(file, maxWidth, quality) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        let width = img.width;
+                        let height = img.height;
+
+                        if (width > maxWidth) {
+                            height = Math.round((height * maxWidth) / width);
+                            width = maxWidth;
+                        }
+
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+
+                        const dataUrl = canvas.toDataURL('image/jpeg', quality);
+                        const base64Data = dataUrl.split(',')[1];
+                        resolve({ base64Data, mimeType: 'image/jpeg', dataUrl });
+                    };
+                    img.onerror = reject;
+                    img.src = e.target.result;
+                };
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+        }
+
+        async function analyzeReceiptWithGemini(base64Data, mimeType) {
+            const today = new Date().toISOString().split('T')[0];
+            const currentYear = today.slice(0, 4);
+            const prompt = `Analizza questa immagine (può essere uno scontrino fiscale italiano oppure uno screenshot della cronologia transazioni Apple Pay / Apple Wallet).
+Estrai tutte le singole spese con:
+- "negozio": nome dell'esercente
+- "data": formato YYYY-MM-DD (se nello screenshot vedi solo giorno/mese, calcola la data rispetto a oggi "${today}" con anno "${currentYear}")
+- "descrizione": descrizione sintetica dell'acquisto
+- "prezzo": importo numerico positivo in Euro
+- "categoria": scegli UNA tra "Alimentari", "Ristoranti/Bar", "Sigarette", "Benzina", "Trasporti", "Bollette/Casa", "Shopping", "Salute", "Svago", "Altro" (es. Tabaccherie -> Sigarette; Eni/Q8/IP/Esso -> Benzina).`;
+
+            const payload = {
+                contents: [{
+                    role: "user",
+                    parts: [
+                        { text: prompt },
+                        { inlineData: { mimeType: mimeType, data: base64Data } }
+                    ]
+                }],
+                generationConfig: {
+                    responseMimeType: "application/json",
+                    responseSchema: {
+                        type: "OBJECT",
+                        properties: {
+                            negozio: { type: "STRING" },
+                            data: { type: "STRING" },
+                            voci: {
+                                type: "ARRAY",
+                                items: {
+                                    type: "OBJECT",
+                                    properties: {
+                                        negozio: { type: "STRING" },
+                                        data: { type: "STRING" },
+                                        descrizione: { type: "STRING" },
+                                        prezzo: { type: "NUMBER" },
+                                        categoria: {
+                                            type: "STRING",
+                                            enum: ["Alimentari", "Ristoranti/Bar", "Sigarette", "Benzina", "Trasporti", "Bollette/Casa", "Shopping", "Salute", "Svago", "Altro"]
+                                        }
+                                    },
+                                    required: ["negozio", "data", "descrizione", "prezzo", "categoria"]
+                                }
+                            }
+                        },
+                        required: ["voci"]
+                    }
+                }
+            };
+
+            const data = await fetchGeminiWithRetry(payload);
+            const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+            if (!rawText) throw new Error("Risposta vuota da Gemini");
+            return JSON.parse(rawText);
+        }
+
+        // ==================== REPORT MENSILE & CONSIGLI IA ====================
+        async function generateMonthlyReport() {
+            const monthItems = getMonthExpensesOnly();
+            const container = document.getElementById('aiReportContainer');
+            const btn = document.getElementById('generateAdviceBtn');
+
+            if (monthItems.length === 0) {
+                showToast('Aggiungi prima qualche spesa!', true);
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = `<div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div><span>Analisi in corso...</span>`;
+            container.classList.remove('hidden');
+            container.innerHTML = `<p class="text-xs text-zinc-400 animate-pulse">Sto analizzando le tue spese...</p>`;
+
+            try {
+                const totalSpent = monthItems.reduce((s, i) => s + Number(i.price), 0);
+                const byCat = {};
+                monthItems.forEach(i => {
+                    byCat[i.category] = (byCat[i.category] || 0) + Number(i.price);
+                });
+
+                const summaryText = Object.entries(byCat)
+                    .map(([c, v]) => `- ${c}: ${v.toFixed(2)} €`)
+                    .join('\n');
+
+                const prompt = `Sei un consulente finanziario personale empatico e diretto.
+Analizza queste spese:
+- Budget Mensile: ${monthlyBudget.toFixed(2)} €
+- Spesa Totale: ${totalSpent.toFixed(2)} €
+- Dettaglio categorie:
+${summaryText}
+
+Rispondi in HTML pulito (solo <p>, <strong>, <ul>, <li> senza markdown) con:
+1. Stato del budget.
+2. Analisi delle abitudini principali (incluso l'impatto di Sigarette, Benzina o Bar/Ristoranti se presenti).
+3. 3 consigli pratici e concreti per risparmiare il mese prossimo.`;
+
+                const payload = {
+                    contents: [{ role: "user", parts: [{ text: prompt }] }]
+                };
+
+                const result = await fetchGeminiWithRetry(payload);
+                const reply = result?.candidates?.[0]?.content?.parts?.[0]?.text || "Impossibile generare il report.";
+                const cleanHtml = reply.replace(/```html/g, '').replace(/```/g, '').trim();
+                container.innerHTML = `<div class="space-y-2 text-xs text-zinc-700 [&_strong]:text-zinc-950 [&_ul]:list-disc [&_ul]:pl-4 [&_ul]:space-y-1">${cleanHtml}</div>`;
+            } catch (error) {
+                if (!getActiveApiKey()) {
+                    container.innerHTML = `<p class="text-xs text-amber-700">Inserisci la Chiave API dall'icona 🔑 in alto per attivare l'analisi IA.</p>`;
+                    openApiKeyModal();
+                } else {
+                    container.innerHTML = `<p class="text-xs text-rose-600">Errore durante la generazione del report. Riprova.</p>`;
+                }
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = `<i data-lucide="wand-2" class="w-4 h-4 text-emerald-400"></i><span>Aggiorna Report e Consigli</span>`;
+                lucide.createIcons();
+            }
+        }
+
+        async function fetchGeminiWithRetry(payload, maxRetries = 4) {
+            const activeKey = getActiveApiKey();
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${activeKey}`;
+            let delay = 1000;
+
+            for (let attempt = 0; attempt <= maxRetries; attempt++) {
+                try {
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                    return await response.json();
+                } catch (err) {
+                    if (attempt === maxRetries) throw err;
+                    await new Promise(res => setTimeout(res, delay));
+                    delay *= 2;
+                }
+            }
+        }
+
+        // ==================== ESPORTAZIONE EXCEL / CSV ====================
+        function exportToCSV() {
+            const dataToExport = getFilteredExpenses();
+            if (dataToExport.length === 0) {
+                showToast('Nessuna spesa da esportare!', true);
+                return;
+            }
+
+            const headers = ['Data', 'Negozio', 'Descrizione', 'Categoria', 'Importo (€)'];
+            const rows = dataToExport.map(item => [
+                item.date,
+                `"${(item.store || '').replace(/"/g, '""')}"`,
+                `"${(item.description || '').replace(/"/g, '""')}"`,
+                `"${item.category}"`,
+                Number(item.price).toFixed(2).replace('.', ',')
+            ]);
+
+            const csvContent = '\uFEFF' + [headers.join(';'), ...rows.map(r => r.join(';'))].join('\n');
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+
+            const link = document.createElement('a');
+            link.href = url;
+            const fileName = `Spese_${selectedMonth === 'ALL' ? 'Completo' : selectedMonth}.csv`;
+            link.setAttribute('download', fileName);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+
+            showToast(`Scaricato "${fileName}"!`);
+        }
+
+        // ==================== MODALI E UTILITÀ ====================
+        function toggleIosModal(show) {
+            const modal = document.getElementById('iosInstallModal');
+            if (show) modal.classList.remove('hidden');
+            else modal.classList.add('hidden');
+        }
+
+        function openBudgetModal() {
+            document.getElementById('budgetInput').value = monthlyBudget;
+            document.getElementById('budgetModal').classList.remove('hidden');
+        }
+
+        function closeBudgetModal() {
+            document.getElementById('budgetModal').classList.add('hidden');
+        }
+
+        function saveBudget() {
+            const val = parseFloat(document.getElementById('budgetInput').value);
+            if (!isNaN(val) && val > 0) {
+                monthlyBudget = val;
+                localStorage.setItem('scontrino_smart_budget', monthlyBudget.toString());
+                renderDashboard();
+                closeBudgetModal();
+                showToast('Budget aggiornato!');
+            }
+        }
+
+        function updateApiKeyIndicator() {
+            const dot = document.getElementById('apiKeyDot');
+            const banner = document.getElementById('missingApiBanner');
+            const isPreviewEnv = window.location.protocol === 'about:' || window.location.hostname.includes('googleusercontent');
+
+            if (!getActiveApiKey() && !isPreviewEnv) {
+                dot.classList.remove('hidden');
+                if (banner) banner.classList.remove('hidden');
+            } else {
+                dot.classList.add('hidden');
+                if (banner) banner.classList.add('hidden');
+            }
+        }
+
+        function openApiKeyModal() {
+            document.getElementById('apiKeyInput').value = localStorage.getItem('scontrino_smart_api_key') || '';
+            document.getElementById('apiKeyModal').classList.remove('hidden');
+        }
+
+        function closeApiKeyModal() {
+            document.getElementById('apiKeyModal').classList.add('hidden');
+        }
+
+        function saveApiKey() {
+            const key = document.getElementById('apiKeyInput').value.trim();
+            if (key) {
+                localStorage.setItem('scontrino_smart_api_key', key);
+                showToast('Chiave API salvata!');
+            } else {
+                localStorage.removeItem('scontrino_smart_api_key');
+                showToast('Chiave API rimossa');
+            }
+            updateApiKeyIndicator();
+            closeApiKeyModal();
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html>
